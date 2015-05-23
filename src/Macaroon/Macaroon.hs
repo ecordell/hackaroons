@@ -6,7 +6,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 
 type Identifier = String
 type Location = String
-type Signature = String
+type Signature = Digest SHA256State
 type Key = String
 
 data Macaroon = Macaroon { identifier :: Identifier
@@ -19,14 +19,19 @@ data Macaroon = Macaroon { identifier :: Identifier
 baseMacaroon :: Key -> Identifier -> Location -> Macaroon
 baseMacaroon key id loc = Macaroon id loc [] $ initialSignature key id
 
+bytestringSignature :: Macaroon -> C.ByteString
+bytestringSignature = bytestringDigest . signature
+
+showSignature :: Macaroon -> String
+showSignature = showDigest . signature
 
 initialSignature :: Key -> Identifier -> Signature
-initialSignature key id = showDigest $ hmacSha256 derivedKey packedId
-  where derivedKey = generateDerivedKey key
+initialSignature key id = hmacSha256 derivedKey packedId
+  where derivedKey = bytestringDigest $ generateDerivedKey key
         packedId = C.pack id
 
-generateDerivedKey :: Key -> C.ByteString
-generateDerivedKey key = bytestringDigest $ hmacSha256 seed packedKey
+generateDerivedKey :: Key -> Signature
+generateDerivedKey key = hmacSha256 seed packedKey
   where seed = C.pack "macaroons-key-generator"
         packedKey = C.pack key
 
@@ -34,6 +39,17 @@ inspect :: Macaroon -> String
 inspect m = "identifier " ++ identifier m ++ "\n" ++
             "location " ++ location m ++ "\n" ++
             caveatsString ++
-            "signature " ++ signature m
+            "signature " ++ showSignature m
   where caveatsString = foldl (\acc c -> acc ++ inspectCaveat c ++ "\n") "" $ caveats m
+
+addFirstPartyCaveat :: Macaroon -> String -> Macaroon
+addFirstPartyCaveat macaroon predicate =
+  macaroon { caveats = caveats macaroon ++ [caveat],
+             signature = signFirstPartyCaveat macaroon caveat }
+  where caveat = FirstPartyCaveat predicate
+
+signFirstPartyCaveat :: Macaroon -> Caveat -> Signature
+signFirstPartyCaveat currentSig caveat = hmacSha256 packedCurrentSig packedCaveat
+  where packedCurrentSig = bytestringSignature currentSig
+        packedCaveat = C.pack $ caveatId caveat
 
