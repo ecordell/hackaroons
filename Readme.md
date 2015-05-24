@@ -2,6 +2,8 @@
 
 Macaroons for Haskell!
 
+This is incomplete. Currently there is no way to add third-party caveats or verify macaroons.
+
 # Usage
 
 ## Basic Macaroon
