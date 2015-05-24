@@ -48,5 +48,6 @@ signature 007692a3aa3e4bf1967a2650d19885970a3d5137abb043ca628ea6e0b47d8ce4
 
 identifier id
 location loc
-signature be9ae46bcfba7353d9dd29afd9686c11b8539a71cffa25b2a1af5a1e9180171b
+cid predicate
+signature 007692a3aa3e4bf1967a2650d19885970a3d5137abb043ca628ea6e0b47d8ce4
 ```
