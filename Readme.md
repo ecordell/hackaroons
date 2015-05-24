@@ -40,7 +40,7 @@ signature 007692a3aa3e4bf1967a2650d19885970a3d5137abb043ca628ea6e0b47d8ce4
 "MDAwZGlkZW50aWZpZXIgaWQKMDAwY2xvY2F0aW9uIGxvYwowMDBkY2lkIHByZWRpY2F0ZQowMDJhc2lnbmF0dXJlIAB2kqOqPkvxlnomUNGYhZcKPVE3q7BDymKOpuC0fYzkCg"
 ```
 
-# Deserializing
+## Deserializing
 
 ```haskell
 > let m = deserialize "MDAwZGlkZW50aWZpZXIgaWQKMDAwY2xvY2F0aW9uIGxvYwowMDBkY2lkIHByZWRpY2F0ZQowMDJhc2lnbmF0dXJlIAB2kqOqPkvxlnomUNGYhZcKPVE3q7BDymKOpuC0fYzkCg"
