@@ -27,3 +27,13 @@ location loc
 cid predicate
 signature 007692a3aa3e4bf1967a2650d19885970a3d5137abb043ca628ea6e0b47d8ce4
 ```
+
+## Serializing
+
+```haskell
+> let m = baseMacaroon "key" "id" "loc"
+> let mf = addFirstPartyCaveat m "predicate"
+> serialize mf
+
+"MDAwZGlkZW50aWZpZXIgaWQKMDAwY2xvY2F0aW9uIGxvYwowMDA0Y2lkIApwcmVkaWNhdGUwMDRhc2lnbmF0dXJlIDAwNzY5MmEzYWEzZTRiZjE5NjdhMjY1MGQxOTg4NTk3MGEzZDUxMzdhYmIwNDNjYTYyOGVhNmUwYjQ3ZDhjZTQK"
+```

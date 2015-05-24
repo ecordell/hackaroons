@@ -3,6 +3,8 @@ module Macaroon.Macaroon (Macaroon(..)) where
 import Macaroon.Caveat
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy.Char8 as C
+import Text.Printf
+import qualified Data.ByteString.Base64.URL.Lazy as Base64
 
 type Identifier = String
 type Location = String
@@ -53,3 +55,29 @@ signFirstPartyCaveat currentSig caveat = hmacSha256 packedCurrentSig packedCavea
   where packedCurrentSig = bytestringSignature currentSig
         packedCaveat = C.pack $ caveatId caveat
 
+serialize :: Macaroon -> String
+serialize = trimBase64. C.unpack . Base64.encode . C.pack . formatBinary
+
+formatBinary :: Macaroon -> String
+formatBinary m = packetize ("identifier " ++ identifier m) ++
+              packetize ("location " ++ location m) ++
+              caveatPackets ++
+              packetize ("signature " ++ showDigest (signature m))
+  where caveatPackets = foldl (\acc c -> acc ++ packetizeCaveat c) "" $ caveats m
+
+packetize :: String  -> String
+packetize s = (printf "%04x" (length s)) ++ s ++ "\n"
+
+packetizeCaveat :: Caveat  -> String
+packetizeCaveat (FirstPartyCaveat p) = packetize "cid " ++ p
+packetizeCaveat (ThirdPartyCaveat p loc id) = (packetize "cid " ++ p) ++
+                                              (packetize "vid " ++ id) ++
+                                              (packetize "cl " ++ loc)
+
+trimBase64 :: String -> String
+trimBase64 = reverse . dropWhile isEqualSign . reverse
+
+isEqualSign :: Char -> Bool
+isEqualSign c
+    | c == '=' = True
+    | otherwise = False
