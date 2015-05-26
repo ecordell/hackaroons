@@ -66,10 +66,10 @@ deserialize :: String -> Macaroon
 deserialize = parseBinary . C.unpack . Base64.decodeLenient . C.pack . padBase64
 
 formatBinary :: Macaroon -> String
-formatBinary m = packetize ("identifier " ++ identifier m) ++
-              packetize ("location " ++ location m) ++
-              caveatPackets ++
-              packetize ("signature " ++ C.unpack (signature m))
+formatBinary m = packetize ("location " ++ location m) ++
+                 packetize ("identifier " ++ identifier m) ++
+                 caveatPackets ++
+                 packetize ("signature " ++ C.unpack (signature m))
   where caveatPackets = foldl (\acc c -> acc ++ packetizeCaveat c) "" $ caveats m
 
 parseBinary :: String -> Macaroon
@@ -101,7 +101,7 @@ listOfPackets = do
   if empty
      then return []
      else do len <- getLazyByteString 4
-             packet <- getLazyByteString (fromIntegral (hexToInt len))
+             packet <- getLazyByteString (fromIntegral (hexToInt len) - 5)
              skip 1 -- newline
              rest <- listOfPackets
              return (packet : rest)
@@ -111,7 +111,9 @@ hexToInt hex = C.foldl' f 0 hex
   where f n c = 16*n + digitToInt c
 
 packetize :: String  -> String
-packetize s = (printf "%04x" (length s)) ++ s ++ "\n"
+packetize s = (printf "%04x" (prefix_length + length s + newline_length)) ++ s ++ "\n"
+  where prefix_length = 4
+        newline_length = 1
 
 packetizeCaveat :: Caveat  -> String
 packetizeCaveat (FirstPartyCaveat p) = packetize $ "cid " ++ p
